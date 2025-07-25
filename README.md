@@ -106,7 +106,6 @@ TOKENIZER_CONFIG_CONTENT = {
     "chat_template": "..."  # Use the full chat template string you provided earlier here.
 }
 
-# Special tokens
 special_tokens = [
     '<|begin_of_text|>', '<|end_of_text|>', '<|fim_prefix|>', '<|fim_middle|>', '<|fim_suffix|>',
     '<|header_start|>', '<|header_end|>', '<|eom|>', '<|eot|>', '<|step|>',
@@ -117,12 +116,10 @@ special_tokens = [
 ]
 special_tokens += [f"<|reserved_token_{i}|>" for i in range(25)]
 
-
 tokenizer = Tokenizer(models.BPE(unk_token="<|unk|>"))
 tokenizer.pre_tokenizer = pre_tokenizers.Regex(SPLIT_PATTERN)
 trainer = trainers.BpeTrainer(vocab_size=FINAL_VOCAB_SIZE, special_tokens=special_tokens)
 
-# Post-processing (optional)
 tokenizer.post_processor = processors.TemplateProcessing(
     single=f"<|begin_of_text|> $A <|eot|>",
     pair=f"<|begin_of_text|> $A <|eot|> $B:1 <|eot|>:1",
