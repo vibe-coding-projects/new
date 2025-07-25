@@ -91,6 +91,49 @@
 
 ---
 
+## Setting for the tokenizer
+
+FINAL_VOCAB_SIZE = 100000
+
+SPLIT_PATTERN = r"""'(?i:[sdmt]|ll|ve|re)|[^\r\n\p{L}\p{N}]?+\p{L}+|\p{N}{1,3}| ?[^\s\p{L}\p{N}]++[\r\n]*|\s*[\r\n]|\s+(?!\S)|\s+"""
+
+TOKENIZER_CONFIG_CONTENT = {
+    "bos_token": "<|begin_of_text|>",
+    "eos_token": "<|eot|>",
+    "pad_token": "<|finetune_right_pad|>",
+    "clean_up_tokenization_spaces": False,
+    "model_input_names": ["input_ids", "attention_mask"],
+    "chat_template": "..."  # Use the full chat template string you provided earlier here.
+}
+
+# Special tokens
+special_tokens = [
+    '<|begin_of_text|>', '<|end_of_text|>', '<|fim_prefix|>', '<|fim_middle|>', '<|fim_suffix|>',
+    '<|header_start|>', '<|header_end|>', '<|eom|>', '<|eot|>', '<|step|>',
+    '<|finetune_right_pad|>', '<|finetune_left_pad|>', '<|unk|>',
+    '<think>', '</think>', '<tool_call>', '</tool_call>', '<tool_response>', '</tool_response>',
+    '<code>', '</code>', '<|audio_start|>', '<|audio_end|>', '<|audio|>', '<|wave|>', '<|spectro|>',
+    '<|sep_img|>', '<|tile_x_sep|>', '<|tile_y_sep|>', '<|vision_start|>', '<|vision_end|>', '<|image|>', '<|patch|>'
+]
+special_tokens += [f"<|reserved_token_{i}|>" for i in range(25)]
+
+
+tokenizer = Tokenizer(models.BPE(unk_token="<|unk|>"))
+tokenizer.pre_tokenizer = pre_tokenizers.Regex(SPLIT_PATTERN)
+trainer = trainers.BpeTrainer(vocab_size=FINAL_VOCAB_SIZE, special_tokens=special_tokens)
+
+# Post-processing (optional)
+tokenizer.post_processor = processors.TemplateProcessing(
+    single=f"<|begin_of_text|> $A <|eot|>",
+    pair=f"<|begin_of_text|> $A <|eot|> $B:1 <|eot|>:1",
+    special_tokens=[
+        ("<|begin_of_text|>", tokenizer.token_to_id("<|begin_of_text|>")),
+        ("<|eot|>", tokenizer.token_to_id("<|eot|>")),
+    ],
+)
+
+---
+
 ## 🛠️ Optional Enhancements
 
 - **Language coverage index**: Ensure multilingual representation
